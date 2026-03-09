@@ -502,15 +502,14 @@ function App(): React.JSX.Element {
 
   return (
     <div
-      className={`relative isolate min-h-screen overflow-hidden p-4 font-sans text-slate-800 transition-colors duration-500 md:p-6 ${theme === 'dark' ? 'dark' : ''}`}
+      className={`relative isolate h-screen w-full overflow-hidden font-sans text-slate-800 transition-colors duration-500 bg-[#f8fafc] dark:bg-[#0c0c0e] ${theme === 'dark' ? 'dark' : ''}`}
     >
-      <div className="pointer-events-none absolute inset-0 z-0 bg-slate-50 transition-colors duration-500 dark:bg-[#0c0c0e]" />
       <div className="pointer-events-none absolute left-1/3 top-0 z-0 h-80 w-80 -translate-x-1/2 rounded-full bg-zinc-400/20 blur-3xl dark:bg-zinc-500/15" />
       <div className="pointer-events-none absolute bottom-0 right-0 z-0 h-96 w-96 translate-x-1/3 rounded-full bg-slate-300/20 blur-3xl dark:bg-slate-500/10" />
 
-      <Card className="mx-auto h-[calc(100vh-2rem)] w-full max-w-7xl overflow-hidden border border-white/65 bg-white/85 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.35)] backdrop-blur-3xl md:h-[calc(100vh-3rem)] rounded-3xl transition-all duration-300 dark:border-slate-800/70 dark:bg-slate-950/70 dark:shadow-[0_24px_60px_-24px_rgba(2,6,23,0.9)]">
+      <div className="relative z-10 h-full w-full">
         <div className="grid h-full md:grid-cols-[320px_1fr]">
-          <aside className="flex h-full flex-col border-b border-slate-200/50 dark:border-slate-800/50 p-4 md:border-b-0 md:border-r">
+          <aside className="flex h-full flex-col border-b border-slate-200/50 dark:border-slate-800/50 p-5 md:border-b-0 md:border-r lg:p-6">
             <CardHeader className="space-y-3 p-0 pb-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -632,7 +631,7 @@ function App(): React.JSX.Element {
             </ScrollArea>
           </aside>
 
-          <main className="h-full overflow-hidden p-4 md:p-6">
+          <main className="h-full overflow-hidden p-5 lg:p-6">
             {!selectedMemo ? (
               <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/80 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/20 text-center animate-in fade-in duration-700 zoom-in-95">
                 <div className="bg-zinc-100 dark:bg-zinc-900/30 p-4 rounded-full mb-4 shadow-inner">
@@ -663,7 +662,7 @@ function App(): React.JSX.Element {
             )}
           </main>
         </div>
-      </Card>
+      </div>
 
       <Dialog
         open={deleteRequest !== null}
