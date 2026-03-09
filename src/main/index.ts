@@ -10,7 +10,9 @@ import {
 
 const reminderScheduler = new ReminderScheduler({
   onReminderFired: (payload, item) => {
+    // 主进程负责真正发系统通知，避免依赖渲染进程存活。
     sendReminderNotification(item)
+    // 同时把“已触发提醒”事件广播给渲染进程，用于持久化去重状态。
     broadcastReminder(payload)
   }
 })
@@ -82,10 +84,12 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('ping', () => console.log('pong'))
+  // 渲染进程把当前提醒快照同步到主进程，主进程据此重建下一次调度。
   ipcMain.handle('reminder:sync', (_event, reminders: ReminderSnapshotItem[]) => {
     reminderScheduler.sync(reminders)
   })
 
+  // 设备从睡眠恢复后立即补偿检查，避免错过提醒。
   powerMonitor.on('resume', () => {
     reminderScheduler.checkNow()
   })

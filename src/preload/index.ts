@@ -5,8 +5,10 @@ import type { ReminderFiredPayload, ReminderSnapshotItem } from '../main/reminde
 // Custom APIs for renderer
 const api = {
   reminder: {
+    // 渲染进程 -> 主进程：同步提醒计划快照。
     sync: (items: ReminderSnapshotItem[]): Promise<void> =>
       ipcRenderer.invoke('reminder:sync', items),
+    // 主进程 -> 渲染进程：监听“提醒已触发”事件。
     onFired: (callback: (payload: ReminderFiredPayload) => void): (() => void) => {
       const listener = (_event: Electron.IpcRendererEvent, payload: ReminderFiredPayload): void => {
         callback(payload)
@@ -14,6 +16,7 @@ const api = {
       ipcRenderer.on('reminder:fired', listener)
 
       return () => {
+        // 组件卸载时移除监听，避免重复订阅和内存泄漏。
         ipcRenderer.removeListener('reminder:fired', listener)
       }
     }

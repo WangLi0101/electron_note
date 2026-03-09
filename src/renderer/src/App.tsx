@@ -387,10 +387,12 @@ function App(): React.JSX.Element {
   }, [theme])
 
   useEffect(() => {
+    // 渲染进程把当前提醒列表推送给主进程，让主进程进行精确定时调度。
     void window.api.reminder.sync(reminderItems)
   }, [reminderItems])
 
   useEffect(() => {
+    // 接收主进程广播的触发事件，并落库 lastNotifiedAt 做去重。
     const unsubscribe = window.api.reminder.onFired((payload) => {
       void (async () => {
         const memo = await memoDb.memos.get(payload.id)
