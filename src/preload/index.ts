@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { ReminderFiredPayload, ReminderSnapshotItem } from '../main/reminder-scheduler'
+import type { WindowPreferences } from '../main/window-preferences'
 
 // Custom APIs for renderer
 const api = {
@@ -20,6 +21,13 @@ const api = {
         ipcRenderer.removeListener('reminder:fired', listener)
       }
     }
+  },
+  window: {
+    // 渲染进程 -> 主进程：获取窗口偏好设置。
+    getPreferences: (): Promise<WindowPreferences> => ipcRenderer.invoke('window:get-preferences'),
+    // 渲染进程 -> 主进程：更新窗口偏好（透明度、置顶）。
+    updatePreferences: (patch: Partial<WindowPreferences>): Promise<WindowPreferences> =>
+      ipcRenderer.invoke('window:update-preferences', patch)
   }
 }
 
