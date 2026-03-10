@@ -103,7 +103,7 @@ function broadcastReminder(payload: ReminderFiredPayload): void {
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1000,
+    width: 620,
     height: 740,
     show: false,
     autoHideMenuBar: true,

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   Bell,
   CalendarClock,
+  Check,
   ChevronDown,
   ChevronRight,
   CircleCheckBig,
@@ -21,6 +22,13 @@ import { Input } from './components/ui/input'
 import { ScrollArea } from './components/ui/scroll-area'
 import { Textarea } from './components/ui/textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from './components/ui/dialog'
+import {
   createMemo,
   memoDb,
   normalizeTags,
@@ -28,7 +36,6 @@ import {
   touchMemoReminder,
   updateMemo
 } from './lib/memo-db'
-import { cn } from './lib/utils'
 import type { MemoEntity } from './types/memo'
 
 interface MemoFormDraft {
@@ -108,6 +115,7 @@ function App(): React.JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [windowOpacity, setWindowOpacity] = useState(1)
   const [alwaysOnTop, setAlwaysOnTop] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const reminderItems = useMemo(
     () =>
@@ -290,19 +298,14 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-800">
-      <div
-        className={cn(
-          'mx-auto grid h-screen w-full',
-          isEditorOpen ? 'lg:grid-cols-[1fr_420px]' : 'grid-cols-1'
-        )}
-      >
+    <div className="min-h-screen bg-[#f2f2f7] text-[#1c1c1e] antialiased dark:bg-black dark:text-[#f5f5f7] selection:bg-black/10 dark:selection:bg-white/20">
+      <div className="mx-auto h-screen w-full">
         <div className="flex h-full flex-col">
-          <div className="space-y-4 border-b border-slate-200 p-6">
+          <div className="space-y-4 border-b border-black/5 p-6 dark:border-white/10">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h1 className="text-xl font-semibold leading-none tracking-tight">待办备忘录</h1>
-                <p className="mt-2 text-sm text-slate-500">
+                <h1 className="text-[22px] font-semibold tracking-tight">待办备忘录</h1>
+                <p className="mt-1.5 text-[13px] text-[#8e8e93]">
                   默认仅展示待办，已办列表独立折叠展示。
                 </p>
               </div>
@@ -311,67 +314,87 @@ function App(): React.JSX.Element {
                   size="sm"
                   variant={alwaysOnTop ? 'default' : 'outline'}
                   onClick={() => handleAlwaysOnTopChange(!alwaysOnTop)}
+                  className="rounded-full"
                 >
-                  <Pin className="size-4" />
+                  <Pin className="size-3.5" />
                   {alwaysOnTop ? '已置顶' : '窗口置顶'}
                 </Button>
-                <Button size="sm" onClick={handleOpenCreatePanel}>
-                  <Plus className="size-4" />
+
+                <div className="relative">
+                  <Button
+                    size="sm"
+                    variant={showSettings ? 'secondary' : 'outline'}
+                    onClick={() => setShowSettings((s) => !s)}
+                    className="rounded-full px-2"
+                  >
+                    <SlidersHorizontal className="size-3.5" />
+                  </Button>
+
+                  {showSettings ? (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
+                      <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-[16px] border border-black/5 bg-white/95 p-4 shadow-[0_4px_24px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#1c1c1e]/95">
+                        <div className="mb-2 flex items-center justify-between text-[13px] font-medium text-[#8e8e93]">
+                          <span>效果与透明度</span>
+                          <span className="text-[#1c1c1e] dark:text-white">
+                            {Math.round(windowOpacity * 100)}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={55}
+                          max={100}
+                          value={Math.round(windowOpacity * 100)}
+                          onChange={(event) =>
+                            handleOpacityChange(Number(event.target.value) / 100)
+                          }
+                          className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-black/10 dark:bg-white/20 outline-none accent-[#1c1c1e] dark:accent-white"
+                        />
+                        <p className="mt-2.5 text-[11px] text-[#8e8e93]">
+                          降低透明度使窗口透视背景，最低为 55%。
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+
+                <Button size="sm" onClick={handleOpenCreatePanel} className="rounded-full">
+                  <Plus className="size-3.5" />
                   新建
                 </Button>
               </div>
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                <Input
-                  className="pl-9"
-                  placeholder="搜索待办/已办"
-                  value={searchKeyword}
-                  onChange={(event) => setSearchKeyword(event.target.value)}
-                />
-              </div>
-
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-600">
-                  <SlidersHorizontal className="size-3.5" />
-                  窗口透明度
-                </div>
-                <label className="block text-xs text-slate-600">
-                  透明度（最低 55%）
-                  <div className="mt-1 flex items-center gap-2">
-                    <input
-                      type="range"
-                      min={55}
-                      max={100}
-                      value={Math.round(windowOpacity * 100)}
-                      onChange={(event) => handleOpacityChange(Number(event.target.value) / 100)}
-                      className="h-2 w-full cursor-pointer"
-                    />
-                    <span className="w-10 text-right text-xs text-slate-500">
-                      {Math.round(windowOpacity * 100)}%
-                    </span>
-                  </div>
-                </label>
-              </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8e8e93]" />
+              <Input
+                className="pl-9 h-10 rounded-[12px] bg-black/5 border-transparent shadow-none focus-visible:bg-white dark:bg-white/10 dark:focus-visible:bg-[#1c1c1e] transition-colors"
+                placeholder="搜索待办/已办"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
+              />
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden p-6">
-            <ScrollArea className="h-full">
-              <section>
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-slate-700">待办事项</h2>
-                  <Badge variant="secondary">{todoMemos.length}</Badge>
+          <div className="flex-1 overflow-hidden px-6 pb-6">
+            <ScrollArea className="h-full pr-4">
+              <section className="mt-2">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-[13px] font-medium text-[#8e8e93]">待办事项</h2>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full px-2 py-0 text-[11px] font-medium bg-black/5 text-[#1c1c1e] dark:bg-white/10 dark:text-white border-transparent"
+                  >
+                    {todoMemos.length}
+                  </Badge>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {todoMemos.map((memo) => {
                     const title = memo.title.trim() || '无标题待办'
                     return (
                       <div
                         key={memo.id}
-                        className="rounded-lg border border-slate-200 bg-white p-3"
+                        className="group rounded-[16px] border border-black/10 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)] dark:border-white/10 dark:bg-[#1c1c1e] dark:shadow-none dark:hover:bg-white/5"
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -386,18 +409,20 @@ function App(): React.JSX.Element {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="truncate text-sm font-medium text-slate-800">{title}</p>
-                              {memo.pinned ? <Pin className="size-3.5 text-slate-500" /> : null}
+                              <p className="truncate text-[15px] font-medium text-[#1c1c1e] dark:text-white">
+                                {title}
+                              </p>
+                              {memo.pinned ? <Pin className="size-3.5 text-[#8e8e93]" /> : null}
                             </div>
                             {memo.content.trim() ? (
-                              <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                              <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-[#8e8e93]">
                                 {memo.content}
                               </p>
                             ) : null}
-                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                            <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-medium text-[#8e8e93]">
                               <span>更新：{formatDateTime(memo.updatedAt)}</span>
                               {memo.remindAt ? (
-                                <span className="inline-flex items-center gap-1">
+                                <span className="inline-flex items-center gap-1 rounded bg-black/5 px-1.5 py-0.5 dark:bg-white/10">
                                   <Bell className="size-3" />
                                   {formatDateTime(memo.remindAt)}
                                 </span>
@@ -407,6 +432,7 @@ function App(): React.JSX.Element {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="opacity-0 transition-opacity group-hover:opacity-100 rounded-full"
                             onClick={() => handleOpenEditPanel(memo)}
                           >
                             <Edit3 className="size-3.5" />
@@ -417,17 +443,20 @@ function App(): React.JSX.Element {
                     )
                   })}
                   {todoMemos.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                      当前没有待办事项。
+                    <div className="flex flex-col items-center justify-center rounded-[16px] border border-dashed border-black/10 bg-black/5 p-8 text-sm text-[#8e8e93] dark:border-white/10 dark:bg-white/5">
+                      <div className="mb-2 rounded-full bg-black/5 p-3 dark:bg-white/10">
+                        <Check className="size-5" />
+                      </div>
+                      当前没有待办事项
                     </div>
                   ) : null}
                 </div>
               </section>
 
-              <section className="mt-5 border-t border-slate-200 pt-4">
+              <section className="mt-8 border-t border-black/5 pt-6 dark:border-white/10">
                 <button
                   type="button"
-                  className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-slate-700"
+                  className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#8e8e93] transition-colors hover:text-[#1c1c1e] dark:hover:text-white"
                   onClick={() => setShowDoneList((current) => !current)}
                 >
                   {showDoneList ? (
@@ -436,17 +465,22 @@ function App(): React.JSX.Element {
                     <ChevronRight className="size-4" />
                   )}
                   已办事项
-                  <Badge variant="outline">{doneMemos.length}</Badge>
+                  <Badge
+                    variant="outline"
+                    className="ml-1 rounded-full px-2 py-0 text-[11px] font-medium border-black/10 dark:border-white/20 text-[#8e8e93]"
+                  >
+                    {doneMemos.length}
+                  </Badge>
                 </button>
 
                 {showDoneList ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3 opacity-60 transition-opacity hover:opacity-100">
                     {doneMemos.map((memo) => {
                       const title = memo.title.trim() || '无标题事项'
                       return (
                         <div
                           key={memo.id}
-                          className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                          className="group rounded-[16px] border border-black/5 bg-white/60 p-4 transition-colors hover:bg-white/90 dark:border-white/10 dark:bg-[#1c1c1e]/60 dark:hover:bg-[#1c1c1e]/90"
                         >
                           <div className="flex items-start gap-3">
                             <Checkbox
@@ -461,18 +495,19 @@ function App(): React.JSX.Element {
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <CircleCheckBig className="size-3.5 text-emerald-500" />
-                                <p className="truncate text-sm text-slate-600 line-through">
+                                <CircleCheckBig className="size-4 text-[#8e8e93]" />
+                                <p className="truncate text-[15px] text-[#8e8e93] line-through decoration-1">
                                   {title}
                                 </p>
                               </div>
-                              <p className="mt-2 text-xs text-slate-500">
+                              <p className="mt-2 text-[11px] font-medium text-[#8e8e93]">
                                 完成于：{formatDateTime(memo.updatedAt)}
                               </p>
                             </div>
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="opacity-0 transition-opacity group-hover:opacity-100 rounded-full"
                               onClick={() => handleOpenEditPanel(memo)}
                             >
                               <Edit3 className="size-3.5" />
@@ -483,7 +518,7 @@ function App(): React.JSX.Element {
                       )
                     })}
                     {doneMemos.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
+                      <div className="rounded-[16px] border border-dashed border-black/10 bg-transparent p-6 text-center text-[13px] text-[#8e8e93] dark:border-white/10">
                         还没有已办事项。
                       </div>
                     ) : null}
@@ -494,20 +529,25 @@ function App(): React.JSX.Element {
           </div>
         </div>
 
-        {isEditorOpen ? (
-          <div className="flex h-full flex-col border-l border-slate-200 bg-slate-50/50">
-            <div className="border-b border-slate-200 p-6">
-              <h2 className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight">
-                <Sparkles className="size-4" />
+        <Dialog
+          open={isEditorOpen}
+          onOpenChange={(open) => {
+            if (!open) handleCloseEditor()
+          }}
+        >
+          <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden flex flex-col gap-0 border-black/5 dark:border-white/10 dark:bg-[#1c1c1e]/90 bg-white/90 backdrop-blur-2xl">
+            <DialogHeader className="border-b border-black/5 dark:border-white/10 p-6 pb-5">
+              <DialogTitle className="flex items-center gap-2 text-[17px] font-semibold tracking-tight">
+                <Sparkles className="size-4 text-[#8e8e93]" />
                 {editorMode === 'create' ? '新建事项' : '编辑事项'}
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-[13px] text-[#8e8e93]">
                 {editorMode === 'create'
-                  ? '完成新增后会自动关闭右侧面板。'
-                  : '保存修改后会自动关闭右侧面板。'}
-              </p>
-            </div>
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+                  ? '完成新增后会自动关闭操作面板。'
+                  : '保存修改后会自动关闭操作面板。'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-6 py-5">
               <Input
                 placeholder="标题（必填）"
                 value={formDraft.title}
@@ -517,7 +557,7 @@ function App(): React.JSX.Element {
               />
 
               <Textarea
-                className="min-h-[180px]"
+                className="min-h-[140px]"
                 placeholder="内容（可选）"
                 value={formDraft.content}
                 onChange={(event) =>
@@ -534,7 +574,7 @@ function App(): React.JSX.Element {
               />
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1 text-xs text-slate-600">
+                <label className="space-y-1.5 text-[12px] font-medium text-[#8e8e93]">
                   <span className="inline-flex items-center gap-1">
                     <CalendarClock className="size-3.5" />
                     截止时间
@@ -547,7 +587,7 @@ function App(): React.JSX.Element {
                     }
                   />
                 </label>
-                <label className="space-y-1 text-xs text-slate-600">
+                <label className="space-y-1.5 text-[12px] font-medium text-[#8e8e93]">
                   <span className="inline-flex items-center gap-1">
                     <Bell className="size-3.5" />
                     提醒时间
@@ -562,7 +602,7 @@ function App(): React.JSX.Element {
                 </label>
               </div>
 
-              <label className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700">
+              <label className="flex items-center justify-between rounded-[12px] border border-black/5 bg-white px-4 py-3 text-[13px] font-medium text-[#1c1c1e] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors dark:border-white/10 dark:bg-white/2 dark:text-white">
                 置顶显示
                 <Checkbox
                   checked={formDraft.pinned}
@@ -573,32 +613,36 @@ function App(): React.JSX.Element {
               </label>
 
               {editorMode === 'edit' && editingMemo ? (
-                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                <div className="rounded-[12px] border border-black/5 bg-black/2 px-4 py-3 text-[12px] font-medium text-[#8e8e93] dark:border-white/10 dark:bg-white/2">
                   当前状态：{editingMemo.status === 'done' ? '已办' : '待办'}
                 </div>
               ) : null}
-
-              <div className="mt-auto flex gap-2 border-t border-slate-200 pt-3">
-                <Button variant="secondary" className="flex-1" onClick={handleCloseEditor}>
-                  取消
-                </Button>
-                <Button
-                  className="flex-1"
-                  disabled={!canSubmit}
-                  onClick={() => void handleSubmit()}
-                >
-                  {isSubmitting
-                    ? editorMode === 'create'
-                      ? '添加中...'
-                      : '保存中...'
-                    : editorMode === 'create'
-                      ? '添加并关闭'
-                      : '保存并关闭'}
-                </Button>
-              </div>
             </div>
-          </div>
-        ) : null}
+
+            <div className="mt-auto flex gap-3 border-t border-black/5 p-6 pt-5 dark:border-white/10 bg-black/2 dark:bg-white/5">
+              <Button
+                variant="secondary"
+                className="flex-1 rounded-full text-[13px]"
+                onClick={handleCloseEditor}
+              >
+                取消
+              </Button>
+              <Button
+                className="flex-1 rounded-full text-[13px]"
+                disabled={!canSubmit}
+                onClick={() => void handleSubmit()}
+              >
+                {isSubmitting
+                  ? editorMode === 'create'
+                    ? '添加中...'
+                    : '保存中...'
+                  : editorMode === 'create'
+                    ? '添加'
+                    : '保存'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

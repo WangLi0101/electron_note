@@ -4,23 +4,24 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../../lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 dark:focus-visible:ring-zinc-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 [&_svg]:pointer-events-none [&_svg]:size-4',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] text-[13px] font-medium transition-all duration-300 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300 [&_svg]:pointer-events-none [&_svg]:size-[15px]',
   {
     variants: {
       variant: {
-        default: 'bg-zinc-600 text-white shadow-sm hover:bg-zinc-700',
+        default:
+          'bg-[#1c1c1e] text-white shadow-sm hover:bg-[#2c2c2e] dark:bg-white dark:text-[#1c1c1e] dark:hover:bg-[#f5f5f7]',
         secondary:
-          'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+          'bg-[#f2f2f7] text-[#1c1c1e] hover:bg-[#e5e5ea] dark:bg-[#2c2c2e] dark:text-[#f2f2f7] dark:hover:bg-[#3a3a3c]',
         outline:
-          'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800',
-        ghost: 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
-        destructive: 'bg-rose-500 text-white hover:bg-rose-600'
+          'border border-black/[0.08] bg-white/50 backdrop-blur-md text-[#1c1c1e] shadow-sm hover:bg-black/[0.02] dark:border-white/[0.12] dark:bg-[#1c1c1e]/50 dark:text-white dark:hover:bg-white/[0.05]',
+        ghost: 'text-[#3a3a3c] hover:bg-black/[0.05] dark:text-[#a1a1aa] dark:hover:bg-white/[0.1]',
+        destructive: 'bg-[#ff3b30] text-white hover:bg-[#d70015]'
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10'
+        default: 'h-9 px-4 py-2',
+        sm: 'h-8 rounded-[8px] px-3',
+        lg: 'h-10 rounded-[12px] px-8',
+        icon: 'h-9 w-9'
       }
     },
     defaultVariants: {
