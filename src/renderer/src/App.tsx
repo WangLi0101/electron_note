@@ -16,7 +16,6 @@ import {
 
 import { Badge } from './components/ui/badge'
 import { Button } from './components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Checkbox } from './components/ui/checkbox'
 import { Input } from './components/ui/input'
 import { ScrollArea } from './components/ui/scroll-area'
@@ -291,19 +290,21 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e2e8f0_0%,_#f8fafc_45%)] p-4 text-slate-800">
+    <div className="min-h-screen bg-white text-slate-800">
       <div
         className={cn(
-          'mx-auto grid h-[calc(100vh-2rem)] max-w-7xl gap-4',
+          'mx-auto grid h-screen w-full',
           isEditorOpen ? 'lg:grid-cols-[1fr_420px]' : 'grid-cols-1'
         )}
       >
-        <Card className="h-full border-slate-200 bg-white/90">
-          <CardHeader className="space-y-4 border-b border-slate-200 pb-4">
+        <div className="flex h-full flex-col">
+          <div className="space-y-4 border-b border-slate-200 p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <CardTitle className="text-xl">待办备忘录</CardTitle>
-                <CardDescription>默认仅展示待办，已办列表独立折叠展示。</CardDescription>
+                <h1 className="text-xl font-semibold leading-none tracking-tight">待办备忘录</h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  默认仅展示待办，已办列表独立折叠展示。
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -355,9 +356,9 @@ function App(): React.JSX.Element {
                 </label>
               </div>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="h-[calc(100%-190px)] p-4">
+          <div className="flex-1 overflow-hidden p-6">
             <ScrollArea className="h-full">
               <section>
                 <div className="mb-2 flex items-center justify-between">
@@ -368,7 +369,10 @@ function App(): React.JSX.Element {
                   {todoMemos.map((memo) => {
                     const title = memo.title.trim() || '无标题待办'
                     return (
-                      <div key={memo.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                      <div
+                        key={memo.id}
+                        className="rounded-lg border border-slate-200 bg-white p-3"
+                      >
                         <div className="flex items-start gap-3">
                           <Checkbox
                             checked={false}
@@ -386,7 +390,9 @@ function App(): React.JSX.Element {
                               {memo.pinned ? <Pin className="size-3.5 text-slate-500" /> : null}
                             </div>
                             {memo.content.trim() ? (
-                              <p className="mt-1 line-clamp-2 text-xs text-slate-500">{memo.content}</p>
+                              <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                                {memo.content}
+                              </p>
                             ) : null}
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                               <span>更新：{formatDateTime(memo.updatedAt)}</span>
@@ -398,7 +404,11 @@ function App(): React.JSX.Element {
                               ) : null}
                             </div>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenEditPanel(memo)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenEditPanel(memo)}
+                          >
                             <Edit3 className="size-3.5" />
                             编辑
                           </Button>
@@ -434,7 +444,10 @@ function App(): React.JSX.Element {
                     {doneMemos.map((memo) => {
                       const title = memo.title.trim() || '无标题事项'
                       return (
-                        <div key={memo.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <div
+                          key={memo.id}
+                          className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                        >
                           <div className="flex items-start gap-3">
                             <Checkbox
                               checked
@@ -449,13 +462,19 @@ function App(): React.JSX.Element {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
                                 <CircleCheckBig className="size-3.5 text-emerald-500" />
-                                <p className="truncate text-sm text-slate-600 line-through">{title}</p>
+                                <p className="truncate text-sm text-slate-600 line-through">
+                                  {title}
+                                </p>
                               </div>
                               <p className="mt-2 text-xs text-slate-500">
                                 完成于：{formatDateTime(memo.updatedAt)}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleOpenEditPanel(memo)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenEditPanel(memo)}
+                            >
                               <Edit3 className="size-3.5" />
                               编辑
                             </Button>
@@ -472,23 +491,23 @@ function App(): React.JSX.Element {
                 ) : null}
               </section>
             </ScrollArea>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {isEditorOpen ? (
-          <Card className="h-full border-slate-200 bg-white/95">
-            <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="inline-flex items-center gap-2">
+          <div className="flex h-full flex-col border-l border-slate-200 bg-slate-50/50">
+            <div className="border-b border-slate-200 p-6">
+              <h2 className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight">
                 <Sparkles className="size-4" />
                 {editorMode === 'create' ? '新建事项' : '编辑事项'}
-              </CardTitle>
-              <CardDescription>
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
                 {editorMode === 'create'
                   ? '完成新增后会自动关闭右侧面板。'
                   : '保存修改后会自动关闭右侧面板。'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex h-[calc(100%-92px)] flex-col gap-4 overflow-y-auto p-4">
+              </p>
+            </div>
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
               <Input
                 placeholder="标题（必填）"
                 value={formDraft.title}
@@ -563,7 +582,11 @@ function App(): React.JSX.Element {
                 <Button variant="secondary" className="flex-1" onClick={handleCloseEditor}>
                   取消
                 </Button>
-                <Button className="flex-1" disabled={!canSubmit} onClick={() => void handleSubmit()}>
+                <Button
+                  className="flex-1"
+                  disabled={!canSubmit}
+                  onClick={() => void handleSubmit()}
+                >
                   {isSubmitting
                     ? editorMode === 'create'
                       ? '添加中...'
@@ -573,8 +596,8 @@ function App(): React.JSX.Element {
                       : '保存并关闭'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : null}
       </div>
     </div>
